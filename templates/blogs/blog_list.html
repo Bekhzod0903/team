@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Blogs{% endblock %}
+
+{% block content %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+        <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<div class="container">
+    <h1>Blogs Page</h1>
+
+    {% if user.is_staff %}
+        <a href="{% url 'blogs:blog-create' %}" class="btn btn-primary">Add Blog</a>
+    {% endif %}
+
+    <hr>
+    <div class="categories">
+        <p>Language</p>
+        <ul>
+            <li><a href="{% url 'blogs:blog-list' %}">All</a></li>
+            {% for category in categories %}
+                <li><a href="{% url 'blogs:blog-list' %}?category={{ category.id }}">{{ category.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <hr>
+    <h2>Blogs</h2>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-bottom: 10px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-all {
+            background-color: #28a745;
+        }
+        .btn-all:hover {
+            background-color: #218838;
+        }
+        .categories {
+            margin-bottom: 20px;
+        }
+        .categories p {
+            font-weight: bold;
+        }
+        .categories ul {
+            list-style: none;
+            padding: 0;
+        }
+        .categories ul li {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .categories ul li a {
+            text-decoration: none;
+            color: #007bff;
+            transition: color 0.3s ease;
+        }
+        .categories ul li a:hover {
+            color: #0056b3;
+        }
+        .blogs-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .blog-item {
+            flex: 1 1 calc(33.333% - 20px);
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .blog-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .blog-link {
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .blog-link:hover {
+            color: #0056b3;
+        }
+        .blog-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .blog-description {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .btn-read-more {
+            background-color: #28a745;
+        }
+        .btn-read-more:hover {
+            background-color: #218838;
+        }
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .pagination a {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 5px;
+            border-radius: 4px;
+            color: #fff;
+            background-color: #007bff;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .pagination a:hover {
+            background-color: #0056b3;
+        }
+        .pagination .current {
+            padding: 8px 16px;
+            margin-right: 5px;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+    </style>
+
+    <div class="blogs-row">
+        {% for post in page_obj %}
+            <div class="blog-item">
+                <a href="{% url 'blogs:blog-detail' post.pk %}" class="blog-link">{{ post.title }}</a>
+                {% if post.image %}
+                    <div>
+                        <a href="{% url 'blogs:blog-detail' post.pk %}">
+                            <img src="{{ post.image.url }}" alt="{{ post.title }}" class="blog-image">
+                        </a>
+                    </div>
+                {% endif %}
+                <p class="blog-description">{{ post.description|truncatewords:20 }}</p>
+                <a href="{% url 'blogs:blog-detail' post.pk %}" class="btn btn-read-more">Read More</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; First</a>
+            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}

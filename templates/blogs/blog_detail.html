@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ post.title }}</h1>
+    {% if post.image %}
+        <img src="{{ post.image.url }}" alt="Post Image" width="500px"> <br>
+    {% else %}
+        <p>No image available.</p>
+    {% endif %}
+    <p style="font-family: monospace;">Description: {{ post.description }}</p>
+    <p style="font-family: monospace;">Language: {{ post.category }}</p>
+    {% if user.is_staff %}
+    <a href="{% url 'blogs:blog-delete' post.pk %}" class="btn btn-primary">Delete</a>
+    <a href="{% url 'blogs:blog-update' post.pk %}" class="btn btn-primary">Update Post</a>
+    {% endif %}
+</div>
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f2f2f2;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #1a1a1a;
+    }
+    img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #fff;
+        background-color: #4caf50;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .btn:hover {
+        background-color: #d32f2f;
+    }
+    .messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+    .messages li {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    .review-form {
+    margin-bottom: 20px;
+}
+
+.review-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.review-form textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+.review-form input[type="number"] {
+    width: 50px;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+.review-form input[type="submit"] {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.review-form input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #fff;
+    background-color: #4caf50;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #45a049;
+}
+.star-rating {
+        font-size: 24px;
+        display: inline-block;
+        position: relative;
+        white-space: nowrap;
+    }
+
+    .star-rating::before {
+        content: '★★★★★';
+        position: absolute;
+        color: gold; 
+        overflow: hidden;
+        top: 0;
+        left: 0;
+        width: calc(var(--rating, 0) * 20%); 
+    }
+
+    .star-rating::after {
+        content: '★★★★★';
+        color: #ccc; 
+    }   
+</style>
+
+<h2>Reviews</h2>
+{% if request.user.is_authenticated %}
+<form method="POST" class="review-form" action="{% url 'blogs:add-review' post.pk %}">
+    {% csrf_token %}
+        <label for="comment">Comment:</label>
+        <textarea name="comment"></textarea>
+        <label for="star_given">Rating (1-5):</label>
+        <input type="number" name="star_given" min="1" max="5">
+        <input type="submit" value="Submit Review">
+    </form>
+{% else %}
+    <h4>You must login to write a review!</h4>
+{% endif %}
+
+<div class="reviews">
+    {% if reviews %}
+        {% for review in reviews %}
+            <div class="review">
+                <h4>{{ review.user.username }} | Rating: {{ review.star_given }}</h4>
+                <div class="star-rating" style="--rating: {{ review.star_given }};"></div> <br>
+                <p>{{ review.comment }}</p>
+                {% if review.user == current_user %}
+                    <a href="{% url 'blogs:update-review' review.pk %}" class="btn">Edit</a>
+                    <a href="{% url 'blogs:delete-review' review.pk %}" class="btn">Delete</a><br><br>           
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No reviews yet.</p>
+    {% endif %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+        <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
